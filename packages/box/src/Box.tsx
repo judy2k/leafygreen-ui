@@ -12,10 +12,15 @@ type AnchorProps<T> = HTMLElementProps<'a'> &
 
 type CustomElementProps<T> = T & {
   component: React.ElementType<any>;
+
   [key: string]: any;
 };
 
-export type BoxProps<T> = DivProps<T> | AnchorProps<T> | CustomElementProps<T>;
+export type BoxProps<T> = { defaultComponent?: React.ElementType<any> } & (
+  | DivProps<T>
+  | AnchorProps<T>
+  | CustomElementProps<T>
+);
 
 function isCustomElement<T>(
   props: BoxProps<T>,
@@ -42,8 +47,8 @@ function isAnchorElement<T>(props: BoxProps<T>): props is AnchorProps<T> {
 
 const Box = React.forwardRef(
   <T extends React.ReactNode>(props: BoxProps<T>, ref: React.Ref<any>) => {
-    const rest = omit(props as any, ['component']);
-    let Box: React.ElementType<any> = 'div';
+    const rest = omit(props as any, ['component', 'defaultComponent', 'type']);
+    let Box: React.ElementType<any> = props?.defaultComponent ?? 'div';
 
     if (isCustomElement<T>(props)) {
       Box = props.component;
@@ -57,11 +62,11 @@ const Box = React.forwardRef(
 
 Box.displayName = 'Box';
 
-// @ts-ignore: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/37660
 Box.propTypes = {
   children: PropTypes.node,
   href: PropTypes.string,
-  component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+  component: PropTypes.func, // @ts-ignore
+  // defaultComponent: PropTypes.element,
 };
 
 export default Box;

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { HTMLElementProps } from '@leafygreen-ui/lib';
+import Box, { BoxProps } from '@leafygreen-ui/box';
 import { css, cx } from '@leafygreen-ui/emotion';
 import { uiColors } from '@leafygreen-ui/palette';
 import { transparentize } from 'polished';
@@ -279,122 +279,87 @@ const disabledStyle = css`
   pointer-events: none;
 `;
 
-interface SharedButtonProps {
+type ButtonProps<T> = T & {
   variant?: Variant;
   size?: Size;
-  className?: string;
-  children?: React.ReactNode;
   disabled?: boolean;
   glyph?: React.ReactElement;
-}
+} & BoxProps<T>;
 
-interface LinkButtonProps extends HTMLElementProps<'a'>, SharedButtonProps {
-  href: string;
-}
+const Button = React.forwardRef(
+  <T extends React.ReactNode>(props: ButtonProps<T>, ref: React.Ref<any>) => {
+    const {
+      className = '',
+      children = null,
+      disabled = false,
+      variant = Variant.Default,
+      size = Size.Normal,
+      glyph,
+    } = props;
 
-interface ButtonButtonProps
-  extends HTMLElementProps<'button'>,
-    SharedButtonProps {
-  href?: null;
-}
+    const rest = omit(props as any, [
+      'className',
+      'size',
+      'variant',
+      'children',
+      'glyph',
+      'disabled',
+    ]);
 
-type CustomElementButtonProps = SharedButtonProps & {
-  as: React.ElementType<any>;
-  [key: string]: any;
-};
-
-type ButtonProps =
-  | LinkButtonProps
-  | ButtonButtonProps
-  | CustomElementButtonProps;
-
-function usesCustomElement(
-  props: ButtonProps,
-): props is CustomElementButtonProps {
-  return (props as any).as != null;
-}
-
-function usesLinkElement(
-  props: LinkButtonProps | ButtonButtonProps,
-): props is LinkButtonProps {
-  return props.href != null;
-}
-
-const Button = React.forwardRef((props: ButtonProps, forwardRef) => {
-  const {
-    className = '',
-    children = null,
-    disabled = false,
-    variant = Variant.Default,
-    size = Size.Normal,
-    glyph,
-  } = props;
-
-  const commonProps = {
-    className: cx(
+    const buttonClassName = cx(
       baseStyle,
       buttonSizes[size],
       buttonVariants[variant],
       { [disabledStyle]: disabled },
       className,
-    ),
-    // only add a disabled prop if not an anchor
-    ...(!usesLinkElement(props) && { disabled }),
-    'aria-disabled': disabled,
-  };
+    );
 
-  const rest = omit(props, [
-    'as',
-    'className',
-    'disabled',
-    'size',
-    'variant',
-    'children',
-    'glyph',
-  ]);
+    const spanStyle = css`
+      // Usually for this to take effect, you would need the element to be
+      // "positioned". Due to an obscure part of CSS spec, flex children
+      // respect z-index without the position property being set.
+      //
+      // https://www.w3.org/TR/css-flexbox-1/#painting
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+    `;
 
-  const spanStyle = css`
-    // Usually for this to take effect, you would need the element to be
-    // "positioned". Due to an obscure part of CSS spec, flex children
-    // respect z-index without the position property being set.
-    //
-    // https://www.w3.org/TR/css-flexbox-1/#painting
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-  `;
+    const modifiedGlyph =
+      glyph && children
+        ? React.cloneElement(glyph, {
+            className: cx({ [glyphMargins[size]]: glyph != null }),
+          })
+        : glyph;
 
-  const modifiedGlyph =
-    glyph && children
-      ? React.cloneElement(glyph, {
-          className: cx({ [glyphMargins[size]]: glyph != null }),
-        })
-      : glyph;
+    const type = rest?.type
+      ? rest.type
+      : !rest?.component
+      ? 'button'
+      : 'undefined';
 
-  const renderButton = (Root: React.ElementType<any> = 'button') => (
-    <Root
-      ref={forwardRef}
-      type={Root === 'button' ? 'button' : undefined}
-      {...(rest as HTMLElementProps<any>)}
-      {...commonProps}
-    >
-      <span className={spanStyle}>
-        {modifiedGlyph}
-        {children}
-      </span>
-    </Root>
-  );
+    const disabledProps = {
+      ...(!rest?.href && { disabled }),
+      'aria-disabled': disabled,
+    };
 
-  if (usesCustomElement(props)) {
-    return renderButton(props.as);
-  }
-
-  if (usesLinkElement(props)) {
-    return renderButton('a');
-  }
-
-  return renderButton();
-});
+    return (
+      <Box
+        className={buttonClassName}
+        ref={ref}
+        defaultComponent="button"
+        type={type}
+        {...disabledProps}
+        {...rest}
+      >
+        <span className={spanStyle}>
+          {modifiedGlyph}
+          {children}
+        </span>
+      </Box>
+    );
+  },
+);
 
 Button.displayName = 'Button';
 
@@ -402,11 +367,7 @@ Button.displayName = 'Button';
 Button.propTypes = {
   variant: PropTypes.oneOf(Object.values(Variant)),
   size: PropTypes.oneOf(Object.values(Size)),
-  className: PropTypes.string,
-  children: PropTypes.node,
   disabled: PropTypes.bool,
-  as: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-  href: PropTypes.string,
   glyph: PropTypes.node,
 };
 

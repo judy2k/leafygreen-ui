@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { css, cx } from '@leafygreen-ui/emotion';
-import { HTMLElementProps } from '@leafygreen-ui/lib';
+import Box, { BoxProps } from '@leafygreen-ui/box';
 import { uiColors } from '@leafygreen-ui/palette';
+import omit from 'lodash/omit';
 
 const Variant = {
   Light: 'light',
@@ -28,66 +29,6 @@ const sizeMap: { [S in Size]: number } = {
   large: 20,
   xlarge: 24,
 };
-
-interface SharedIconButtonProps {
-  /**
-   * Determines color of `IconButton`. Can be `light` or `dark`.
-   */
-  variant?: Variant;
-
-  /**
-   * Classname applied to `IconButton`.
-   */
-  className?: string;
-
-  /**
-   * Content to appear inside of `IconButton`.
-   */
-  children?: React.ReactNode;
-
-  /**
-   * Determines whether or not `IconButton` is disabled.
-   */
-  disabled?: boolean;
-
-  /**
-   * Required prop which will be passed to `aria-label` attribute
-   */
-  ariaLabel: string;
-
-  /**
-   * Determines size of IconButton can be: default, large, xlarge
-   */
-  size?: Size;
-
-  /**
-   * Determines whether `IconButton` will appear `active`
-   */
-  active?: boolean;
-}
-
-interface LinkIconButtonProps
-  extends HTMLElementProps<'a'>,
-    SharedIconButtonProps {
-  /**
-   * Destination URL, if supplied `IconButton` will render in `a` tags, rather than `button` tags.
-   */
-  href: string;
-}
-
-interface ButtonIconButtonProps
-  extends HTMLElementProps<'button'>,
-    SharedIconButtonProps {
-  href?: null;
-}
-
-type IconButtonProps = LinkIconButtonProps | ButtonIconButtonProps;
-
-function usesLinkElement(
-  props: LinkIconButtonProps | ButtonIconButtonProps,
-): props is LinkIconButtonProps {
-  return props.href != null;
-}
 
 const removeButtonStyle = css`
   border: none;
@@ -218,6 +159,34 @@ const getIconStyle = (size: Size) => css`
   width: ${sizeMap[size]}px;
 `;
 
+type IconButtonProps<T> = T &
+  BoxProps<T> & {
+    /**
+     * Determines color of `IconButton`. Can be `light` or `dark`.
+     */
+    variant?: Variant;
+
+    /**
+     * Required prop which will be passed to `aria-label` attribute
+     */
+    ariaLabel: string;
+
+    /**
+     * Determines size of IconButton can be: default, large, xlarge
+     */
+    size?: Size;
+
+    /**
+     * Determines whether `IconButton` will appear `active`
+     */
+    active?: boolean;
+
+    /**
+     * Determines whether `IconButton` will appear `disabled`
+     */
+    disabled?: boolean;
+  };
+
 /**
  * # IconButton
  *
@@ -238,60 +207,68 @@ const getIconStyle = (size: Size) => css`
  * @param props.active Determines whether `IconButton` will appear `active`
  *
  */
+const IconButton = React.forwardRef(
+  <T extends React.ReactNode>(
+    props: IconButtonProps<T>,
+    ref: React.Ref<any>,
+  ) => {
+    const {
+      variant = 'light',
+      size = 'default',
+      active = false,
+      className,
+      children,
+      ariaLabel,
+      disabled,
+    } = props;
 
-const IconButton = React.forwardRef((props: IconButtonProps, ref) => {
-  const {
-    variant = 'light',
-    disabled = false,
-    size = 'default',
-    active = false,
-    className,
-    href,
-    children,
-    ariaLabel,
-    ...rest
-  } = props;
+    const rest = omit(props as any, [
+      'variant',
+      'size',
+      'active',
+      'className',
+      'children',
+      'ariaLabel',
+      'disabled',
+    ]);
 
-  const renderIconButton = (Root: React.ElementType<any> = 'button') => (
-    <Root
-      {...rest}
-      href={href ? href : undefined}
-      aria-disabled={disabled}
-      aria-label={ariaLabel}
-      ref={ref}
-      className={cx(
-        removeButtonStyle,
-        baseIconButtonStyle,
-        iconButtonSizes[size],
-        iconButtonVariants[variant],
-        {
-          [disabledStyle[variant]]: disabled,
-          [activeStyle[variant]]: active,
-        },
-        className,
-      )}
-      tabIndex={disabled ? -1 : 0}
-    >
-      <span className={getIconStyle(size)}>{children}</span>
-    </Root>
-  );
+    const disabledProps = {
+      ...(!rest?.href && { disabled }),
+      'aria-disabled': disabled,
+    };
 
-  if (usesLinkElement(props)) {
-    return renderIconButton('a');
-  }
-
-  return renderIconButton();
-});
+    return (
+      <Box
+        {...disabledProps}
+        {...rest}
+        aria-label={ariaLabel}
+        ref={ref}
+        className={cx(
+          removeButtonStyle,
+          baseIconButtonStyle,
+          iconButtonSizes[size],
+          iconButtonVariants[variant],
+          {
+            [disabledStyle[variant]]: disabled,
+            [activeStyle[variant]]: active,
+          },
+          className,
+        )}
+        defaultComponent="button"
+        tabIndex={disabled ? -1 : 0}
+      >
+        <span className={getIconStyle(size)}>{children}</span>
+      </Box>
+    );
+  },
+);
 
 IconButton.displayName = 'IconButton';
 
 // @ts-ignore: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/37660
 IconButton.propTypes = {
   variant: PropTypes.oneOf(Object.values(Variant)),
-  className: PropTypes.string,
-  children: PropTypes.node,
   disabled: PropTypes.bool,
-  href: PropTypes.string,
   ariaLabel: PropTypes.string.isRequired,
   active: PropTypes.bool,
 };
