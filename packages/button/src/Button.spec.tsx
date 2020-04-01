@@ -40,10 +40,6 @@ describe('packages/Button', () => {
       expect(defaultButton.tagName.toLowerCase()).toBe('button');
     });
 
-    // test(`renders a button with the "button" type by default`, () => {
-    //   expect((defaultButton as HTMLButtonElement).type).toBe('button');
-    // });
-
     test('fires the onClick handler once when clicked', () => {
       fireEvent.click(defaultButton);
       expect(onClick).toHaveBeenCalled();

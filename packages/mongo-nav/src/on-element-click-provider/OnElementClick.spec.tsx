@@ -64,10 +64,14 @@ describe('packages/mongo-nav/on-element-click-provider', () => {
     let el: keyof typeof defaultElements;
 
     for (el in defaultElements) {
+      // eslint failing because there's no expect statement, because the expect is wrapped in a callback
+      // eslint-disable-next-line
       test(`it fires onElementClick callback on ${el}`, () =>
         testForCallback(getByTestId(defaultElements[el]), el));
     }
 
+    // eslint failing because there's no expect statement, because the expect is wrapped in a callback
+    // eslint-disable-next-line
     test('when OrgSelect is open', async () => {
       fireEvent.click(getByTestId('org-trigger'));
 
@@ -76,6 +80,8 @@ describe('packages/mongo-nav/on-element-click-provider', () => {
       testForCallback(viewOrgs, NavElement.OrgNavViewAllOrganizations);
     });
 
+    // eslint failing because there's no expect statement, because the expect is wrapped in a callback
+    // eslint-disable-next-line
     test('when OrgNav dropdown is open', async () => {
       fireEvent.click(getByTestId('org-nav-dropdown'));
 
@@ -97,6 +103,8 @@ describe('packages/mongo-nav/on-element-click-provider', () => {
       );
     });
 
+    // eslint failing because there's no expect statement, because the expect is wrapped in a callback
+    //  eslint-disable-next-line
     test('when ProjectSelect is open', async () => {
       fireEvent.click(getByTestId('project-select-trigger'));
 
@@ -105,11 +113,13 @@ describe('packages/mongo-nav/on-element-click-provider', () => {
       );
       const addNewProject = getByTestId('project-select-add-new-project');
 
-      testForCallback(viewAllProjects, NavElement.ProjectNavViewAllProjects);
+      testForCallback(viewAllProjects, NavElement.ProjectNavViewAllProjects); // eslint-disable-line;
 
-      testForCallback(addNewProject, NavElement.ProjectNavAddProject);
+      testForCallback(addNewProject, NavElement.ProjectNavAddProject); // eslint-disable-line;
     });
 
+    // eslint failing because there's no expect statement, because the expect is wrapped in a callback
+    // eslint-disable-next-line
     test('when the Project dropdown is open', async () => {
       fireEvent.click(getByTestId('project-nav-project-menu'));
 
@@ -127,6 +137,8 @@ describe('packages/mongo-nav/on-element-click-provider', () => {
       );
     });
 
+    // eslint failing because there's no expect statement, because the expect is wrapped in a callback
+    // eslint-disable-next-line
     test('when the UserMenu is open', async () => {
       fireEvent.click(getByTestId('user-menu-trigger'));
 

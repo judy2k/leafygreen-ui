@@ -368,7 +368,7 @@ Button.propTypes = {
   variant: PropTypes.oneOf(Object.values(Variant)),
   size: PropTypes.oneOf(Object.values(Size)),
   disabled: PropTypes.bool,
-  glyph: PropTypes.node,
+  glyph: PropTypes.element,
 };
 
 export default Button;

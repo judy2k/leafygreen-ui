@@ -65,8 +65,10 @@ Box.displayName = 'Box';
 Box.propTypes = {
   children: PropTypes.node,
   href: PropTypes.string,
-  component: PropTypes.func, // @ts-ignore
-  // defaultComponent: PropTypes.element,
+  // @ts-ignore
+  component: PropTypes.elementType,
+  // @ts-ignore
+  defaultComponent: PropTypes.elementType,
 };
 
 export default Box;

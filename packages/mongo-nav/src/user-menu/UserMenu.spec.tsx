@@ -40,6 +40,8 @@ describe('packages/UserMenu', () => {
   test('opens when trigger is clicked', () => {
     const trigger = getByTestId('user-menu-trigger');
     fireEvent.click(trigger);
+    const userPreferences = getByText('User Preferences');
+    expect(userPreferences).toBeInTheDocument();
   });
 
   test('renders atlas MenuItems when atlas is the active product', () => {

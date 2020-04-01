@@ -55,6 +55,7 @@ describe('packages/Icon/glyphs/', () => {
         });
       }
 
+      // eslint-disable-next-line
       test('all fills used in SVG files are "none", "#000", or "#000000"', () => {
         validateGlyphObject(rootGlyphObject);
       });
